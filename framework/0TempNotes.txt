@@ -1,0 +1,96 @@
+
+Gin vs Echo
+
+Router:
+- Gin router is faster (for http2 too?)
+- Gin router is more flexible, but complicated rules can easily lead to a lot of ambiguity. I certainly prefer
+the simpler router. Gin's router could easily result in frustrating route bugs IMO. Bottom line - echo's router
+is more explicit, which is the Go way and just better to maintain.
+- Groups are about the same. Can echo do nested groups? It should if it doesn't. I don't think it does.
+- defining middleware seems about the same
+- Echo has a better way to set route names
+- getting all routes : echo has e.Routes(); Gin?
+- Gin has example for running multiple services (e.g. admin port).
+
+Middleware:
+- Looks about the same. Gin has good clarification about using Go routines in middleware.
+- Does Echo have a c.Copy() method?
+
+Binding:
+- Gin has a method that allows defaults. Not totally sure I see the value in this. Better to have a struct
+with defaults and bind to that. More concise, just as clear.
+- even the function names for Echo are better
+- Gin distinguishes between mandatory and optional binding. This seems like a trap to me, especially combined with
+validation. They even describe the gotchas with optional binding.
+- should only fail when no conversion is possible (json field to int)
+- Gin prefers query vars over body for form binding
+- ** How does Echo handle binding of checkboxes?
+- ** how does echo handling binding when query and form are both non-zero?
+
+File Uploads
+- Gin clearly better here. Gin has single method for saving uploaded file. Echo has a whole, several-line recipe
+at https://echo.labstack.com/cookbook/file-upload.
+
+Validation
+- Gin has it. Echo doesn't.
+- Gin badly conflates binding with validation. They have tags like "binding:required"...
+- mutation on bind : Gin lets you define time.Time format, though it seems like this would be useful outgoing than incoming.
+- Gin uses tags even for individual variable validation ( validateVar(someVar, `one,two`) ). Is this better than
+an array of funcs? Probably
+- Gin does not seem to be able to handle white/black lists or regexes in an ad-hoc way
+- Gin supports custom i18n errors using automatic translation. Maybe ok, seems dubious.
+
+Templates
+- Gin can return YAML as a content type
+- Gin has a "secure json" mode. what is that?
+- Gin has better static file support
+- Gin's template handling is awkward for handing deep directories with lots of templates. It makes you think
+about the hierarchy. Better to just have dot-notation like we have.
+- Gin apparently lets you set custom delimiters for templates??? What does that mean.
+- Gin has explicit support for custom template functions which is nice
+- Gin only allows one template by default? Not sure exactly what this means. blech... How are echo and
+Gin actually different here?
+
+Deployment
+- seems like we should offer more deployment options - both embedded and with resources files
+ ** See https://github.com/gin-gonic/gin#graceful-restart-or-stop for graceful restart
+ - First class Docker support
+
+ Misc
+ - Gin's context seems simpler
+ - Gin has some nice AbortXYZ methods. Useful for validation?
+ - Gin supports a stack of errors instead of just one. We could probably accomplish this with built-in merry
+ support.
+ - both contexts have arbitrary key/val support. Gin's is typed, Echo's is not. Untyped is probably better for this.
+ - Echo has both IP and RealIp which is preferrable to Gin
+ - Gin has IsWebSocket, Echo has
+ - Gin supports Go content, appears Echo does not
+ - Echo appears to have better http Push support
+
+ Buffalo Notes:
+ - Look at : From context : Flash, Data, Websocket, LogField(s)
+=============
+
+Notes :
+
+- Server. Easy Let'sEcnrypt support. Easy support for multiple services (?). Default routing of :80 to :443.
+Robust server timeout support (see Cloudflare article). Robust SSL cipher support. Easy/default support for
+graceful restart. Make server Push easy. First class support for websockets.
+
+- Routes shouldn't have magic. It should be very easy to read the routes. Order shouldn't matter. You shouldn't
+need to know fallback or default rules. It's useful to define route names and to list routes.
+
+- File uploads should be a cinch for the default case, with more control available when needed.
+
+- Groups should be clear. You should be able to define middleware on groups. You should be able to do nested
+groups.
+
+- Binding should never use "must". As Gin shows, there are gotchas with modifying headers if you do, plus it complicates
+the validation lifecycle. **Binding and validation should not be conflated**.
+
+- Validation. Should exist, Should be done in one place. it should minimize magic and be easy to read.
+
+- Templates. Good support for static files. Good support for custom template functions.
+Deploy as glob or with resources. Should "just work".
+
+- Misc. context support for subdomains
